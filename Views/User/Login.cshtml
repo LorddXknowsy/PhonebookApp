@@ -1,0 +1,128 @@
+﻿@model ContactApp.Models.Contact
+
+@{
+    ViewBag.Title = "Login";
+}
+
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link type="text/css" rel="stylesheet" href="~/Content/jquery-ui.css" />
+    <script src="~/Scripts/jquery-1.12.4.js"></script>
+    <script src="~/Scripts/jquery-ui.js"></script>
+</head>
+<body>
+
+
+
+    <div style="margin-top:1em;">
+        <button id="regButton" class="btn btn-success">Register</button>
+    </div>
+
+    <div style="display: none" id="regForm">
+        <div class="container" style="width: 300px;">
+            <h2>Register</h2>
+                <div class="form-group">
+                    <div>
+                        Email:<input type="text" class="form-control" name="email" id="email" />
+                    </div>
+                    <div>
+                        Username:<input type="text" class="form-control" name="UserName" id="regUserName" />
+                    </div>
+                    <div>
+                        Password:<input type="password" class="form-control" name="Password" id="regPassword" />
+                    </div>
+                    <div class="col text-center">
+                        <button class="btn btn-success w-200" type="submit" id="regisButton">Register</button>
+                    </div>
+                </div>
+        </div>
+    </div>
+
+
+
+
+    <div id="logForm" class="container" style="width: 300px;">
+        <h2>Login</h2>
+        <div class="form-group">
+            <div>
+                Username:<input type="text" class="form-control" name="UserName" id="UserName" />
+            </div>
+            <div>
+                Password:<input type="password" class="form-control" name="Password" id="Password" />
+            </div>
+            <div class="col text-center">
+                <button id="signButton" class="btn btn-success w-200" type="button">Sign In</button>
+            </div>
+        </div>
+    </div>
+
+    <script type="text/javascript">
+        $(function () {
+            $("#signButton").click(function () {
+
+                var user = {
+                    
+                    UserName: $("#UserName").val(),
+                    Password: $("#Password").val()
+                };
+
+                $.ajax({
+                    type: "POST",
+                    url: "/User/Login",
+                    data: JSON.stringify(user),
+                    contentType: "application/json; charset=utf-8",
+                    dataType: "json",
+                    success: function (isAuth) {
+                        if (isAuth) window.location.href = "/Contact/GetContacts";
+                        else alert("Your Username or Password is incorrect!");
+                    }
+                });
+            });
+        });
+
+        $(function () {
+            $("#regForm").dialog({
+                autoOpen: false,
+                width: 400
+            });
+
+            $("#regButton").on("click", function () {
+                $("#regForm").dialog("open");
+
+            });
+        })
+
+        $("#regisButton").on("click", function () {
+
+
+                var user = {
+                    email: $('#email').val(),
+                    UserName: $("#regUserName").val(),
+                    Password: $("#regPassword").val()
+                };
+
+                $.ajax({
+                    type: "POST",
+                    url: "/User/Register",
+                    data: JSON.stringify(user),
+                    contentType: "application/json; charset=utf-8",
+                    dataType: "json",
+                    success: function () {                     
+                    }
+                });
+            $("#regForm").dialog("close");
+            alert("You have successfully registered!");
+            });
+            
+
+    </script>
+
+
+
+</body>
+</html>
+
+

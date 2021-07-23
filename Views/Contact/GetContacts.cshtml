@@ -1,0 +1,235 @@
+﻿@model IEnumerable<ContactApp.Models.Contact>
+
+@{
+    ViewBag.Title = "GetContacts";
+}
+
+
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <link type="text/css" rel="stylesheet" href="~/Content/jquery-ui.css" />
+    <script src="~/Scripts/jquery-1.12.4.js"></script>
+    <script src="~/Scripts/jquery-ui.js"></script>
+</head>
+<body>
+
+    <h1 class="text-success" style="text-align:center; margin-top:1em; font-family:'Malgun Gothic'">
+        My Contacts
+    </h1>
+
+    <div class="row" style="margin-left:32em">
+        <div class="col-md-6 ">
+            <button class="col-md-8 btn btn-success" id="addButton">Add Contact</button>
+        </div>
+        <div class="col-md-2 offset-md-3" style="margin-left:12em">
+            <button class="col-md-10 btn btn-danger mr-2" onclick="location.href='/User/Login'">Log Out</button>
+        </div>
+
+    </div>
+
+
+    <div style="margin-top: 2em; font-family:'Nirmala UI'" id="grdContacts"></div>
+
+
+
+    <div style="display: none" id="addForm">
+        <div class="container" style="width: 300px;">
+            <div class="form-group">
+                <div>
+                    <input type="hidden" class="form-control" name="ID" id="ID" />
+                </div>
+                <div>
+                    <input type="text" class="form-control" name="firstName" id="firstName" placeholder="First name" />
+                </div>
+                <div>
+                    <input type="text" class="form-control" name="lastName" id="lastName" placeholder="Last name" />
+                </div>
+                <div>
+                    <input type="text" class="form-control" name="phone" id="phone" placeholder="Phone" />
+                </div>
+                <div>
+                    <input type="text" class="form-control" name="address" id="address" placeholder="Address" />
+                </div>
+                <div>
+                    <input type="text" class="form-control" name="email" id="email" placeholder="E-mail" />
+                </div>
+                <div class="col text-center">
+                    <button class="btn btn-success w-200" type="submit" id="submitButton">Add</button>
+                    <button class="btn btn-success w-200" type="submit" id="editButton">Save</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="dialog-confirm" style="display:none;" title="Delete Contact?">
+        <p><span class="ui-icon ui-icon-alert" style="float:left; margin:12px 12px 20px 0;"></span>These items will be permanently deleted and cannot be recovered. Are you sure?</p>
+    </div>
+
+    <link type="text/css" rel="stylesheet" href="~/Scripts/jsgrid/dist/jsgrid.min.css" />
+    <link type="text/css" rel="stylesheet" href="~/Scripts/jsgrid/dist/jsgrid-theme.min.css" />
+    <script type="text/javascript" src="~/Scripts/jsgrid/dist/jsgrid.min.js"></script>
+    <script type="text/javascript">
+
+
+        $("#grdContacts").jsGrid({
+            width: "100%",
+            pageSize: 5,
+            sorting: false,
+            paging: true,
+            controller: {
+                loadData: function (filter) {
+                    return $.ajax({
+                        type: "POST",
+                        url: "/Contact/GetContactsList",
+                        contentType: "application/json; charset=utf-8",
+                        dataType: "json"
+                    })
+                }
+            },
+            fields: [
+                { name: "firstName", type: "text", width: 150 },
+                { name: "lastName", type: "text", width: 50 },
+                { name: "phone", type: "text", width: 200 },
+                { name: "address", type: "text", textfield: "address" },
+                { name: "email", type: "text", sorting: false },
+                {
+                    type: "control", width: 100, editButton: false, deleteButton: false,
+                    itemTemplate: function (value, item) {
+                        var $result = jsGrid.fields.control.prototype.itemTemplate.apply(this, arguments);
+
+
+                        var $customDeleteButton = $("<button>").attr({ class: "customGridDeletebutton jsgrid-button jsgrid-delete-button" })
+                            .click(function (e) {
+                                var contact = item;
+                                event.stopPropagation();
+                                $("#dialog-confirm").dialog({
+                                    resizable: false,
+                                    height: "auto",
+                                    width: 400,
+                                    modal: true,
+                                    buttons: {
+                                        "Delete": function () {
+                                            $.ajax({
+                                                type: "POST",
+                                                url: "/Contact/DeleteContact",
+                                                data: JSON.stringify(contact),
+                                                contentType: "application/json; charset=utf-8",
+                                                dataType: "json",
+                                                success: function () {
+                                                    window.location.reload();
+                                                }
+                                            });
+                                        },
+                                        Cancel: function () {
+                                            $(this).dialog("close");
+                                        }
+                                    }
+                                });
+
+
+                            });
+                        return $("<div>").append($customDeleteButton);
+                    },
+                }
+            ],
+            rowClick: function (contact) {
+
+                $("#ID").val(contact.item.ID);
+                $("#firstName").val(contact.item.firstName);
+                $("#firstName").val(contact.item.firstName);
+                $("#lastName").val(contact.item.lastName);
+                $("#phone").val(contact.item.phone);
+                $("#address").val(contact.item.address);
+                $("#email").val(contact.item.email);
+
+                $(function () {
+
+                    $("#addForm").dialog({
+
+                        autoOpen: false,
+                        width: 400
+                    });
+                    $("#addForm").dialog("open");
+                    $('#submitButton').hide();
+                    $('#editButton').show();
+
+                });
+
+                $("#editButton").on("click", function () {
+                    var contact = {
+                        ID: $('input[name=ID]').val(),
+                        firstName: $("#firstName").val(),
+                        lastName: $("#lastName").val(),
+                        phone: $("#phone").val(),
+                        address: $("#address").val(),
+                        email: $("#email").val()
+                    };
+                    $.ajax({
+                        type: "POST",
+                        url: "/Contact/UpdateContact",
+                        data: JSON.stringify(contact),
+                        contentType: "application/json; charset=utf-8",
+                        dataType: "json",
+                        success: function () {
+                        }
+                    });
+                    $("#addForm").dialog("close");
+
+                    window.location.reload();
+                });
+
+            }
+
+        });
+
+
+        $("#grdContacts").jsGrid("loadData");
+
+
+        $(function () {
+            $("#addForm").dialog({
+                autoOpen: false,
+                width: 400
+            });
+
+            $("#addButton").on("click", function () {
+                $('#submitButton').show();
+                $('#editButton').hide();
+                $("#addForm").dialog("open");
+
+            });
+
+            $("#submitButton").on("click", function () {
+                var contact = {
+                    userName: $("#UserName").val(),
+                    firstName: $("#firstName").val(),
+                    lastName: $("#lastName").val(),
+                    phone: $("#phone").val(),
+                    address: $("#address").val(),
+                    email: $("#email").val()
+                };
+
+                $.ajax({
+                    type: "POST",
+                    url: "/Contact/SaveContact",
+                    data: JSON.stringify(contact),
+                    contentType: "application/json; charset=utf-8",
+                    dataType: "json",
+                    success: function () {
+                    }
+                });
+                $("#addForm").dialog("close");
+
+                window.location.reload();
+            });
+
+        });
+
+    </script>
+
+
+</body>
+</html>
