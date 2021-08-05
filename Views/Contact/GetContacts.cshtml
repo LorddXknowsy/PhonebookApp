@@ -85,7 +85,13 @@
                         type: "POST",
                         url: "/Contact/GetContactsList",
                         contentType: "application/json; charset=utf-8",
-                        dataType: "json"
+                        dataType: "json",
+                        error: function (httpObj, status) {
+                            if (httpObj.status == 401) {
+                                alert("You are not authorized!")
+                                window.location.href = "/User/Login";
+                            }
+                        },
                     })
                 }
             },
@@ -120,7 +126,13 @@
                                                 dataType: "json",
                                                 success: function () {
                                                     window.location.reload();
+                                                },
+                                                error: function (httpObj, status) {
+                                                    if (httpObj.status == 401) {
+                                                        window.location.href = "/User/Login";
+                                                    }
                                                 }
+
                                             });
                                         },
                                         Cancel: function () {
@@ -174,6 +186,11 @@
                         contentType: "application/json; charset=utf-8",
                         dataType: "json",
                         success: function () {
+                        },
+                        error: function (httpObj, status) {
+                            if (httpObj.status == 401) {
+                                window.location.href = "/User/Login";
+                            }
                         }
                     });
                     $("#addForm").dialog("close");
@@ -184,6 +201,7 @@
             }
 
         });
+
 
 
         $("#grdContacts").jsGrid("loadData");
@@ -219,6 +237,11 @@
                     contentType: "application/json; charset=utf-8",
                     dataType: "json",
                     success: function () {
+                    },
+                    error: function (httpObj,status) {
+                        if (httpObj.status == 401) {
+                            window.location.href = "/User/Login";
+                        }
                     }
                 });
                 $("#addForm").dialog("close");
